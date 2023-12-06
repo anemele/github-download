@@ -19,13 +19,16 @@ def main(repo: str):
         for mirror in get_mirror_url(url):
             logger.info(f'GET {mirror}')
             resp = get(mirror)
-            if resp.status_code == 200:
-                path = DOWNLOAD_DIR / mirror.rsplit('/', 1)[-1]
-                path.write_bytes(resp.content)
-                succ += 1
-                logger.info(f'SAVE {path}')
+            if resp.status_code != 200:
+                continue
+            path = DOWNLOAD_DIR / mirror.rsplit('/', 1)[-1]
+            if path.exists():
+                logger.warning(f'exists {path}')
+            path.write_bytes(resp.content)
+            succ += 1
+            logger.info(f'SAVE {path}')
 
-                break
+            break
         else:
             logger.warning(f'NO ACCESSIBLE RESOURCE: {url}')
 
