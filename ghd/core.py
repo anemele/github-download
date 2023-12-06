@@ -71,6 +71,7 @@ def get_choices(repo: str) -> tuple[str, tuple[str, ...]]:
         logger.error('no assets found')
         exit(1)
 
+    logger.debug(f'{url=}')
     title = f'Please choose ASSETS (↑↓ space enter)\n{url}'
     choices = pick(assets, title, multiselect=True)
     logger.debug(f'{choices=}')

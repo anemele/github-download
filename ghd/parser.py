@@ -3,7 +3,7 @@ import re
 
 def parse_download_link(url: str) -> str | None:
     # https://github.com/{owner}/{repo}/releases/tag/{v1.12.5}
-    pattern = re.compile(r'https://github.com/\w+?/\w+?/releases/tag/\w+?')
+    pattern = re.compile(r'https://github.com/.+?/.+?/releases/tag/\w+?')
     if pattern.match(url) is None:
         return
     # https://{host}/{owner}/{repo}/releases/download/{tag}/{file}
