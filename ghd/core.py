@@ -20,11 +20,12 @@ def run(repo: str | None):
     else:
         repos = choose_repo()
         urls = tuple(chain(*map(get_download_url, repos)))
-    download_release(urls)
-    sbp.run(f'explorer {DOWNLOAD_DIR}')
+    s, _ = download_release(urls)
+    if s > 0:
+        sbp.run(f'explorer {DOWNLOAD_DIR}')
 
 
-def download_release(urls: Iterable[str]):
+def download_release(urls: Iterable[str]) -> tuple[int, int]:
     succ = 0
     count = 0
 
@@ -47,6 +48,7 @@ def download_release(urls: Iterable[str]):
             logger.warning(f'NO ACCESSIBLE RESOURCE: {url}')
 
     logger.info(f'FINISH {succ}/{count}')
+    return succ, count
 
 
 def get_mirror_url(url: str):
