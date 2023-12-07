@@ -1,3 +1,5 @@
+from typing import Iterable
+
 from pick import pick
 
 from .consts import DOWLOAD_MANIFEST
@@ -11,7 +13,7 @@ def _get_manifest():
     return DOWLOAD_MANIFEST.read_text().strip().splitlines()
 
 
-def choose_repo():
+def choose_repo() -> Iterable[str]:
     manifest = _get_manifest()
     if manifest is None:
         logger.error('no repo given')
@@ -22,4 +24,6 @@ def choose_repo():
         logger.info('no choice')
         exit(0)
 
-    return (x[0] for x in choices)  # type: ignore
+    choice = tuple(x[0] for x in choices)  # type: ignore
+    logger.info(f'{choice=}')
+    return choice

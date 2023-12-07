@@ -1,7 +1,10 @@
 import subprocess as sbp
+from itertools import chain
+from typing import Iterable
 
 from pick import pick
 
+from .config import choose_repo
 from .consts import COMMAND, DOWNLOAD_DIR
 from .log import logger
 from .mirrors import mirror_gh_ddlc_top, mirror_hub_nuaa_cf, mirror_hub_yzuu_cf
@@ -11,14 +14,17 @@ from .stream import get
 MIRROR_SITE = (mirror_gh_ddlc_top, mirror_hub_nuaa_cf, mirror_hub_yzuu_cf)
 
 
-def run(repo: str):
-    info = get_download_info(repo)
-    if info is None:
-        return
+def run(repo: str | None):
+    if repo is not None:
+        urls = get_download_url(repo)
+    else:
+        repos = choose_repo()
+        urls = tuple(chain(*map(get_download_url, repos)))
+    download_release(urls)
+    sbp.run(f'explorer {DOWNLOAD_DIR}')
 
-    release, assets = info
-    urls = (f'{release}/{asset}' for asset in assets)
 
+def download_release(urls: Iterable[str]):
     succ = 0
     count = 0
 
@@ -41,12 +47,21 @@ def run(repo: str):
             logger.warning(f'NO ACCESSIBLE RESOURCE: {url}')
 
     logger.info(f'FINISH {succ}/{count}')
-    sbp.run(f'explorer {DOWNLOAD_DIR}')
 
 
 def get_mirror_url(url: str):
     for mirror in MIRROR_SITE:
         yield mirror(url)
+
+
+def get_download_url(repo: str) -> Iterable[str]:
+    info = get_download_info(repo)
+    if info is None:
+        return ()
+
+    release, assets = info
+    logger.info(f'choose {len(assets)} of {repo}')
+    return (f'{release}/{asset}' for asset in assets)
 
 
 def get_download_info(repo: str):
