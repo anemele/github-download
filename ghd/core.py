@@ -11,10 +11,18 @@ from .stream import get
 MIRROR_SITE = (mirror_gh_ddlc_top, mirror_hub_nuaa_cf, mirror_hub_yzuu_cf)
 
 
-def main(repo: str):
+def run(repo: str):
+    info = get_download_info(repo)
+    if info is None:
+        return
+
+    release, assets = info
+    urls = (f'{release}/{asset}' for asset in assets)
+
     succ = 0
     count = 0
-    for url in get_download_url(repo):
+
+    for url in urls:
         count += 1
         for mirror in get_mirror_url(url):
             logger.info(f'GET {mirror}')
@@ -41,35 +49,39 @@ def get_mirror_url(url: str):
         yield mirror(url)
 
 
-def get_download_url(repo: str):
-    url, assets = get_choices(repo)
+def get_download_info(repo: str):
+    choice = get_choices(repo)
+    if choice is None:
+        return
+
+    url, assets = choice
     if assets is None or len(assets) == 0:
-        logger.info('no choice')
-        exit(1)
+        logger.info(f'no choice: {repo}')
+        return
 
     release = parse_download_link(url)
     if release is None:
-        logger.info('no tag url found')
-        exit(1)
+        logger.info(f'no release found: {repo}')
+        return
 
-    for asset in assets:
-        yield f'{release}/{asset}'
+    return release, assets
 
 
-def get_choices(repo: str) -> tuple[str, tuple[str, ...]]:
+def get_choices(repo: str) -> tuple[str, tuple[str, ...]] | None:
     ret = sbp.run(COMMAND.format(repo=repo), capture_output=True, encoding='ansi')
     if ret.returncode != 0:
-        logger.error(ret.stderr)
-        exit(1)
+        logger.error(f'{repo}: {ret.stderr}')
+        return
 
     url, assets = parse_gh_release_view(ret.stdout)
     if url == '':
-        logger.error('no tag url found')
-        exit(1)
+        logger.error(f'no release found: {repo}')
+        return
+
     num = len(assets)
     if num == 0:
-        logger.error('no assets found')
-        exit(1)
+        logger.error(f'no assets found: {repo}')
+        return
 
     logger.debug(f'{url=}')
     title = f'Please choose ASSETS (↑↓ space enter)\n{url}'

@@ -8,7 +8,7 @@ def parse_download_link(url: str) -> str | None:
         return
     # https://{host}/{owner}/{repo}/releases/download/{tag}/{file}
     # return without the tail {file}
-    return url.replace('tag', 'download')
+    return url.replace('releases/tag', 'releases/download')
 
 
 def parse_gh_release_view(output: str) -> tuple[str, tuple[str, ...]]:
