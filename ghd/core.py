@@ -1,6 +1,7 @@
+import json
 import subprocess as sbp
 from itertools import chain
-from typing import Iterable
+from typing import Any, Iterable
 
 from pick import pick
 
@@ -106,3 +107,12 @@ def get_choices(repo: str) -> tuple[str, tuple[str, ...]] | None:
     logger.debug(f'{choices=}')
 
     return url, tuple(x[0] for x in choices)  # type: ignore
+
+
+def query_release(repo: str) -> list[dict[str, Any]] | None:
+    ret = sbp.run(f'gh api repos/{repo}/releases', capture_output=True)
+    if ret.returncode != 0:
+        logger.error(f'{repo}: {ret.stderr}')
+        return
+
+    return json.loads(ret.stdout)
