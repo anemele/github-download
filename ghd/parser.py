@@ -9,15 +9,3 @@ def parse_download_link(url: str) -> str | None:
     # https://{host}/{owner}/{repo}/releases/download/{tag}/{file}
     # return without the tail {file}
     return url.replace('releases/tag', 'releases/download')
-
-
-def parse_gh_release_view(output: str) -> tuple[str, tuple[str, ...]]:
-    url = ''
-    assets = []
-    for line in output.splitlines():
-        if line.startswith('url:'):
-            _, url = line.split(maxsplit=1)
-        elif line.startswith('asset:'):
-            _, tmp = line.split(maxsplit=1)
-            assets.append(tmp)
-    return url, tuple(assets)

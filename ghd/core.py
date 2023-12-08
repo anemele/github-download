@@ -1,16 +1,16 @@
-from dataclasses import dataclass
 import json
 import subprocess as sbp
+from dataclasses import dataclass
 from itertools import chain
 from typing import Any, Iterable
 
 from pick import pick
 
 from .config import choose_repo
-from .consts import COMMAND, DOWNLOAD_DIR
+from .consts import DOWNLOAD_DIR
 from .log import logger
 from .mirrors import mirror_gh_ddlc_top, mirror_hub_nuaa_cf, mirror_hub_yzuu_cf
-from .parser import parse_download_link, parse_gh_release_view
+from .parser import parse_download_link
 from .stream import get
 
 MIRROR_SITE = (mirror_gh_ddlc_top, mirror_hub_nuaa_cf, mirror_hub_yzuu_cf)
@@ -69,7 +69,7 @@ def get_download_url(repo: str) -> Iterable[str]:
 
 
 def get_download_info(repo: str):
-    choice = get_choices(repo)
+    choice = get_tag_choice(repo)
     if choice is None:
         return
 
@@ -86,28 +86,21 @@ def get_download_info(repo: str):
     return release, assets
 
 
-def get_choices(repo: str) -> tuple[str, tuple[str, ...]] | None:
-    ret = sbp.run(COMMAND.format(repo=repo), capture_output=True, encoding='ansi')
-    if ret.returncode != 0:
-        logger.error(f'{repo}: {ret.stderr}')
-        return
-
-    url, assets = parse_gh_release_view(ret.stdout)
-    if url == '':
+def get_tag_choice(repo: str) -> tuple[str, tuple[str, ...]] | None:
+    resp = query_release(repo)
+    if resp is None:
         logger.error(f'no release found: {repo}')
         return
 
-    num = len(assets)
-    if num == 0:
-        logger.error(f'no assets found: {repo}')
-        return
+    info = get_release_info(resp)
+    logger.debug(f'{len(info)=}')
 
-    logger.debug(f'{url=}')
-    title = f'Please choose ASSETS (↑↓ space enter)\n{url}'
-    choices = pick(assets, title, multiselect=True)
-    logger.debug(f'{choices=}')
+    index: int
+    _, index = pick([i.name for i in info], repo)  # type: ignore
+    tag = info[index]
+    choices = pick([i.name for i in tag.assets], tag.url, multiselect=True)
 
-    return url, tuple(x[0] for x in choices)  # type: ignore
+    return tag.url, tuple(x[0] for x in choices)  # type: ignore
 
 
 def query_release(repo: str) -> list[dict[str, Any]] | None:
