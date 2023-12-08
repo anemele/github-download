@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import json
 import subprocess as sbp
 from itertools import chain
@@ -116,3 +117,34 @@ def query_release(repo: str) -> list[dict[str, Any]] | None:
         return
 
     return json.loads(ret.stdout)
+
+
+@dataclass
+class Asset:
+    name: str
+    size: int
+    url: str
+
+    def __str__(self) -> str:
+        return f'{self.name}:{self.size:,}  {self.url}'
+
+
+@dataclass
+class Release:
+    name: str
+    url: str
+    assets: list[Asset]
+
+
+def get_release_info(data):
+    return list(
+        Release(
+            it['name'],
+            it['html_url'],
+            list(
+                Asset(asset['name'], asset['size'], asset['browser_download_url'])
+                for asset in it['assets']
+            ),
+        )
+        for it in data
+    )
