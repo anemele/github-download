@@ -88,16 +88,23 @@ def get_download_info(repo: str):
 
 def get_tag_choice(repo: str) -> tuple[str, tuple[str, ...]] | None:
     resp = query_release(repo)
-    if resp is None:
+    if resp is None or len(resp) == 0:
         logger.error(f'no release found: {repo}')
         return
 
     info = get_release_info(resp)
     logger.debug(f'{len(info)=}')
+    if len(info) == 0:
+        logger.error(f'no tag found: {repo}')
+        return
 
     index: int
     _, index = pick([i.name for i in info], repo)  # type: ignore
     tag = info[index]
+    if len(tag.assets) == 0:
+        logger.error(f'no assets found: {repo}')
+        return
+
     choices = pick([i.name for i in tag.assets], tag.url, multiselect=True)
 
     return tag.url, tuple(x[0] for x in choices)  # type: ignore
