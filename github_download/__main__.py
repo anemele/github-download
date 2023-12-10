@@ -5,7 +5,9 @@ import sys
 from .core import run
 from .log import logger
 
-parser = argparse.ArgumentParser(sys.argv[1], description=__doc__)
+parser = argparse.ArgumentParser(
+    prog=__package__ if len(sys.argv) == 1 else sys.argv[1], description=__doc__
+)
 parser.add_argument(
     'repo',
     type=str,
