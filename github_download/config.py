@@ -13,16 +13,16 @@ def _get_manifest():
     return DOWLOAD_MANIFEST.read_text().strip().splitlines()
 
 
-def choose_repo() -> Iterable[str]:
+def choose_repo() -> Iterable[str] | None:
     manifest = _get_manifest()
     if manifest is None:
         logger.error('no repo given')
-        exit(1)
+        return
 
     choices = pick(manifest, 'choose repos to download release', multiselect=True)
     if len(choices) == 0:
         logger.info('no choice')
-        exit(0)
+        return
 
     choice = tuple(x[0] for x in choices)  # type: ignore
     logger.info(f'{choice=}')

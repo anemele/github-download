@@ -9,11 +9,9 @@ from pick import pick
 from .config import choose_repo
 from .consts import DOWNLOAD_DIR
 from .log import logger
-from .mirrors import mirror_gh_ddlc_top, mirror_hub_nuaa_cf, mirror_hub_yzuu_cf
+from .mirrors import MIRROR_SITE
 from .parser import parse_download_link
 from .stream import get
-
-MIRROR_SITE = (mirror_gh_ddlc_top, mirror_hub_nuaa_cf, mirror_hub_yzuu_cf)
 
 
 def run(repo: str | None):
@@ -21,6 +19,8 @@ def run(repo: str | None):
         urls = get_download_url(repo)
     else:
         repos = choose_repo()
+        if repos is None:
+            return
         urls = tuple(chain(*map(get_download_url, repos)))
     s, _ = download_release(urls)
     if s > 0:
@@ -137,14 +137,14 @@ class Release:
 
 
 def get_release_info(data):
-    return list(
+    return [
         Release(
             it['name'],
             it['html_url'],
-            list(
+            [
                 Asset(asset['name'], asset['size'], asset['browser_download_url'])
                 for asset in it['assets']
-            ),
+            ],
         )
         for it in data
-    )
+    ]

@@ -11,3 +11,6 @@ def mirror_hub_nuaa_cf(url: str) -> str:
 def mirror_hub_yzuu_cf(url: str) -> str:
     site = 'hub.yzuu.cf'
     return url.replace('github.com', site, 1)
+
+
+MIRROR_SITE = (mirror_gh_ddlc_top, mirror_hub_nuaa_cf, mirror_hub_yzuu_cf)
