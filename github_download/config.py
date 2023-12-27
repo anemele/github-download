@@ -27,3 +27,8 @@ def choose_repo() -> Iterable[str] | None:
     choice = tuple(x[0] for x in choices)  # type: ignore
     logger.info(f'{choice=}')
     return choice
+
+
+def add_manifest(item: str):
+    with open(DOWLOAD_MANIFEST, 'a') as fp:
+        fp.write(f'{item}\n')

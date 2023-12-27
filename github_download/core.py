@@ -6,7 +6,7 @@ from typing import Any, Iterable
 
 from pick import pick
 
-from .config import choose_repo
+from .config import add_manifest, choose_repo
 from .consts import DOWNLOAD_DIR
 from .log import logger
 from .mirrors import MIRROR_SITE

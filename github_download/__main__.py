@@ -1,9 +1,8 @@
 import argparse
-import logging
-import sys
+
+from github_download.config import add_manifest
 
 from .core import run
-from .log import logger
 
 parser = argparse.ArgumentParser(prog=__package__, description=__doc__)
 parser.add_argument(
@@ -12,12 +11,14 @@ parser.add_argument(
     nargs='?',
     help='like owner/repo format. default: read from manifest',
 )
-parser.add_argument('--debug', action='store_true')
+parser.add_argument('--add', action='store_true', help='add to manifest')
 args = parser.parse_args()
 
 repo: str | None = args.repo
-if args.debug:
-    logger.setLevel(logging.DEBUG)
+if args.add:
+    if repo is not None:
+        add_manifest(repo)
+    exit()
 
 try:
     run(repo)
